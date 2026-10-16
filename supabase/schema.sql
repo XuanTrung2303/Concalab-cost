@@ -1,10 +1,11 @@
 -- Chạy file này trong Supabase > SQL Editor
 create table materials(id uuid primary key default gen_random_uuid(), user_id uuid not null default auth.uid() references auth.users on delete cascade, name text not null, type text default 'PLA', price_kg numeric not null default 0, created_at timestamptz default now());
 create table machines(id uuid primary key default gen_random_uuid(), user_id uuid not null default auth.uid() references auth.users on delete cascade, name text not null, kw numeric default 0.1, life_hours numeric default 5000, price numeric default 0, created_at timestamptz default now());
-create table company_costs(id uuid primary key default gen_random_uuid(), user_id uuid not null default auth.uid() references auth.users on delete cascade, name text not null, amount numeric default 0, created_at timestamptz default now());
+create table company_costs(id uuid primary key default gen_random_uuid(), user_id uuid not null default auth.uid() references auth.users on delete cascade, name text not null, amount numeric default 0, spent_on date not null default current_date, created_at timestamptz default now());
+create table products(id uuid primary key default gen_random_uuid(), user_id uuid not null default auth.uid() references auth.users on delete cascade, name text not null, sku text, inputs jsonb not null default '{}', unit_cost numeric default 0, price numeric default 0, profit numeric default 0, created_at timestamptz default now());
 create table settings(user_id uuid primary key default auth.uid() references auth.users on delete cascade, elec numeric default 3500, wage numeric default 30000, fail numeric default 5, mode text default 'markup', profit numeric default 50, ovh numeric default 0, units numeric default 300, var_cost numeric default 0, avg_price numeric default 0, updated_at timestamptz default now());
 do $$ declare t text; begin
- foreach t in array array['materials','machines','company_costs','settings'] loop
+ foreach t in array array['materials','machines','company_costs','products','settings'] loop
   execute format('alter table %I enable row level security',t);
   execute format('create policy "own rows" on %I for all using (auth.uid()=user_id) with check (auth.uid()=user_id)',t);
  end loop; end $$;

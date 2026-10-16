@@ -37,7 +37,8 @@ function crud(path, table, fields) {
 }
 crud('materials', 'materials', ['name', 'type', 'price_kg'])
 crud('machines', 'machines', ['name', 'kw', 'life_hours', 'price'])
-crud('company-costs', 'company_costs', ['name', 'amount'])
+crud('company-costs', 'company_costs', ['name', 'amount', 'spent_on'])
+crud('products', 'products', ['name', 'sku', 'inputs', 'unit_cost', 'price', 'profit'])
 
 const SET = ['elec', 'wage', 'fail', 'mode', 'profit', 'ovh', 'units', 'var_cost', 'avg_price']
 app.get('/api/settings', async (req, res) => reply(res, await req.sb.from('settings').select('*').maybeSingle().then(r => ({ ...r, data: r.data || {} }))))

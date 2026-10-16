@@ -6,6 +6,7 @@ import Calc from './views/Calc.vue'
 import Library from './views/Library.vue'
 import Settings from './views/Settings.vue'
 import Company from './views/Company.vue'
+import Products from './views/Products.vue'
 import { supabase } from './supabase'
 import { store, loadAll } from './store'
 import './style.css'
@@ -16,6 +17,7 @@ const router = createRouter({
     { path: '/', redirect: '/calc' },
     { path: '/login', component: Login },
     { path: '/calc', component: Calc },
+    { path: '/products', component: Products },
     { path: '/materials', component: Library, props: { kind: 'materials' } },
     { path: '/machines', component: Library, props: { kind: 'machines' } },
     { path: '/settings', component: Settings },

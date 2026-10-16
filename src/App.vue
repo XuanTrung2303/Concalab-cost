@@ -3,7 +3,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { store } from './store'
 import { supabase } from './supabase'
 const route = useRoute(), router = useRouter()
-const tabs = [['/calc', 'Tính giá'], ['/materials', 'Nhựa'], ['/machines', 'Máy in'], ['/settings', 'Cài đặt']]
+const tabs = [['/calc', 'Tính giá'], ['/products', 'Sản phẩm'], ['/materials', 'Nhựa'], ['/machines', 'Máy in'], ['/settings', 'Cài đặt']]
 async function logout() { await supabase.auth.signOut(); store.user = null; router.push('/login') }
 </script>
 <template>

@@ -4,24 +4,23 @@ import { useRouter } from 'vue-router'
 import { supabase } from '../supabase'
 import { store, loadAll } from '../store'
 const router = useRouter(), email = ref(''), pw = ref(''), msg = ref(''), busy = ref(false)
-async function go(signup) {
-  busy.value = true; msg.value = ''
-  const f = signup ? supabase.auth.signUp : supabase.auth.signInWithPassword
-  const { data, error } = await f.call(supabase.auth, { email: email.value, password: pw.value })
+async function login() {
+  msg.value = ''
+  if (!email.value.trim() || !pw.value) return msg.value = 'Hãy nhập email và mật khẩu'
+  busy.value = true
+  const { data, error } = await supabase.auth.signInWithPassword({ email: email.value.trim(), password: pw.value })
   busy.value = false
-  if (error) return msg.value = error.message
-  if (!data.session) return msg.value = 'Đã tạo tài khoản. Hãy xác nhận email rồi đăng nhập.'
+  if (error) return msg.value = error.message === 'Invalid login credentials' ? 'Sai email hoặc mật khẩu' : error.message
   store.user = data.user; await loadAll(); router.push('/calc')
 }
 </script>
 <template>
-  <div class="card login">
+  <form class="card login" @submit.prevent="login">
     <h1>Concalab-cost</h1>
-    <p class="sub">Đăng nhập để lưu nhựa, máy in và chi phí công ty trên mọi thiết bị.</p>
-    <label>Email<input v-model="email" type="email" autocomplete="email"></label>
-    <label>Mật khẩu<input v-model="pw" type="password" autocomplete="current-password" @keyup.enter="go(false)"></label>
+    <p class="sub">Đăng nhập tài khoản quản trị để dùng công cụ.</p>
+    <label>Email<input v-model="email" type="email" autocomplete="username"></label>
+    <label>Mật khẩu<input v-model="pw" type="password" autocomplete="current-password"></label>
     <p class="bad" v-if="msg">{{ msg }}</p>
-    <button class="btn" :disabled="busy" @click="go(false)">Đăng nhập</button>
-    <button class="btn g" :disabled="busy" @click="go(true)">Tạo tài khoản</button>
-  </div>
+    <button class="btn" type="submit" :disabled="busy">Đăng nhập</button>
+  </form>
 </template>
