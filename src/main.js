@@ -7,9 +7,9 @@ import Library from './views/Library.vue'
 import Settings from './views/Settings.vue'
 import Company from './views/Company.vue'
 import Products from './views/Products.vue'
-import { supabase } from './supabase'
+import { supabase, configured } from './supabase'
 import { store, loadAll } from './store'
-import NumInput from './Components/NumInput.vue'
+import NumInput from './components/NumInput.vue'
 import './style.css'
 
 const router = createRouter({
@@ -27,6 +27,10 @@ const router = createRouter({
 })
 router.beforeEach(to => { if (!store.user && to.path !== '/login') return '/login' })
 
-const { data: { session } } = await supabase.auth.getSession()
-if (session) { store.user = session.user; await loadAll() }
-createApp(App).use(router).component('NumInput', NumInput).mount('#app')
+if (!configured) {
+  document.getElementById('app').innerHTML = '<p style="max-width:520px;margin:60px auto;padding:0 16px;font:15px/1.6 system-ui">Thiếu cấu hình Supabase. Hãy thêm biến môi trường <b>VITE_SUPABASE_URL</b> và <b>VITE_SUPABASE_ANON_KEY</b>, rồi build lại.</p>'
+} else {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (session) { store.user = session.user; try { await loadAll() } catch (e) { console.error(e) } }
+  createApp(App).use(router).component('NumInput', NumInput).mount('#app')
+}
