@@ -10,6 +10,8 @@ async function copy() {
   try { await navigator.clipboard.writeText(t); note.value = 'Đã copy' } catch { note.value = 'Không copy được' }
   setTimeout(() => note.value = '', 2000)
 }
+const depHour = computed(() => r.value.m?.life_hours ? r.value.m.price / r.value.m.life_hours : 0)
+const pct = v => r.value.batch ? Math.round(v / r.value.batch * 100) : 0
 const err = ref('')
 async function saveProduct() {
   err.value = ''
@@ -41,19 +43,20 @@ function fresh() { store.editing = null; c.name = ''; c.sku = '' }
       <div class="card"><h2>Máy và nhựa</h2><div class="f">
         <label>Máy in<select v-model="c.machine"><option v-for="m in store.machines" :key="m.id" :value="m.id">{{ m.name }}</option></select></label>
         <label>Loại nhựa<select v-model="c.material"><option v-for="m in store.materials" :key="m.id" :value="m.id">{{ m.name }}</option></select></label>
-        <label>Số gram nhựa (cả khay)<input v-model.number="c.gram" type="number" min="0"></label>
+        <label>Số gram nhựa (cả khay)<NumInput v-model="c.gram" min="0" /></label>
       </div>
+      <p class="warn" v-if="depHour > 20000">Khấu hao máy đang là {{ fmt(depHour) }}/giờ, có vẻ quá cao. Kiểm tra Giá mua và Tuổi thọ của máy trong tab <router-link to="/machines">Máy in</router-link>.</p>
       <p class="note" v-if="!r.m || !r.t">Chưa có máy hoặc nhựa. Thêm ở tab <router-link to="/machines">Máy in</router-link> và <router-link to="/materials">Nhựa</router-link>.</p></div>
       <div class="card"><h2>Thông số in</h2><div class="f">
-        <label>Thời gian in (giờ)<input v-model.number="c.h" type="number" min="0"></label>
-        <label>Thời gian in (phút)<input v-model.number="c.min" type="number" min="0" max="59"></label>
-        <label>Thời gian xử lý (phút)<input v-model.number="c.handle" type="number" min="0"></label>
-        <label>Số sản phẩm trong khay<input v-model.number="c.qty" type="number" min="1"></label>
-        <label>Chi phí khác cả khay (đ)<input v-model.number="c.other" type="number" min="0"></label>
+        <label>Thời gian in (giờ)<NumInput v-model="c.h" min="0" /></label>
+        <label>Thời gian in (phút)<NumInput v-model="c.min" min="0" max="59" /></label>
+        <label>Thời gian xử lý (phút)<NumInput v-model="c.handle" min="0" /></label>
+        <label>Số sản phẩm trong khay<NumInput v-model="c.qty" min="1" /></label>
+        <label>Chi phí khác cả khay (đ)<NumInput v-model="c.other" min="0" /></label>
       </div></div>
       <div class="card"><h2>Kênh bán</h2><div class="f">
-        <label>Phí sàn (%)<input v-model.number="c.fee" type="number" min="0" max="60" step=".1"></label>
-        <label>Phí cố định mỗi đơn (đ)<input v-model.number="c.fixed" type="number" min="0"></label>
+        <label>Phí sàn (%)<NumInput v-model="c.fee" min="0" max="60" step=".1" /></label>
+        <label>Phí cố định mỗi đơn (đ)<NumInput v-model="c.fixed" min="0" /></label>
       </div></div>
     </div>
     <aside class="card res">
@@ -62,7 +65,8 @@ function fresh() { store.editing = null; c.name = ''; c.sku = '' }
         <div><div class="lbl">Lợi nhuận / sản phẩm</div><b :class="r.profit >= 0 ? 'ok' : 'bad'">{{ fmt(r.profit) }}</b></div></div>
       <table class="led">
 <tbody>
-        <tr v-for="x in rows" :key="x[0]"><td>{{ x[0] }}</td><td>{{ fmt(x[1]) }}</td></tr>
+        <tr v-for="x in rows" :key="x[0]"><td>{{ x[0] }}<template v-if="x[0] === 'Nhựa' && r.t"> · <i class="dot" :style="{ background: r.t.color || '#ccc' }"></i>{{ r.t.name }}, {{ c.gram }}g</template>
+          <div class="pbar"><i :style="{ width: pct(x[1]) + '%' }"></i></div></td><td>{{ fmt(x[1]) }}<div class="lbl">{{ pct(x[1]) }}%</div></td></tr>
         <tr class="t"><td>Giá vốn cả khay</td><td>{{ fmt(r.batch) }}</td></tr>
         <tr v-if="store.set.ovh"><td>Chi phí công ty / sản phẩm</td><td>{{ fmt(store.set.ovh) }}</td></tr>
       </tbody>

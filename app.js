@@ -35,9 +35,10 @@ function crud(path, table, fields) {
     error ? res.status(400).json({ error: error.message }) : res.json({ ok: true })
   })
 }
-crud('materials', 'materials', ['name', 'type', 'price_kg'])
+crud('materials', 'materials', ['name', 'type', 'price_kg', 'color'])
 crud('machines', 'machines', ['name', 'kw', 'life_hours', 'price'])
 crud('company-costs', 'company_costs', ['name', 'amount', 'spent_on'])
+crud('sales', 'company_sales', ['sold_on', 'name', 'revenue', 'cogs'])
 crud('products', 'products', ['name', 'sku', 'inputs', 'unit_cost', 'price', 'profit'])
 
 const SET = ['elec', 'wage', 'fail', 'mode', 'profit', 'ovh', 'units', 'var_cost', 'avg_price']

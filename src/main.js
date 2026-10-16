@@ -9,6 +9,7 @@ import Company from './views/Company.vue'
 import Products from './views/Products.vue'
 import { supabase } from './supabase'
 import { store, loadAll } from './store'
+import NumInput from './Components/NumInput.vue'
 import './style.css'
 
 const router = createRouter({
@@ -28,4 +29,4 @@ router.beforeEach(to => { if (!store.user && to.path !== '/login') return '/logi
 
 const { data: { session } } = await supabase.auth.getSession()
 if (session) { store.user = session.user; await loadAll() }
-createApp(App).use(router).mount('#app')
+createApp(App).use(router).component('NumInput', NumInput).mount('#app')
