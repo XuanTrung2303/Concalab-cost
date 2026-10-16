@@ -16,7 +16,7 @@ async function login() {
 </script>
 <template>
   <form class="card login" @submit.prevent="login">
-    <h1>Concalab-cost</h1>
+    <router-link class="brand" to="/calc">ConCá<i> Lab</i></router-link>
     <p class="sub">Đăng nhập tài khoản quản trị để dùng công cụ.</p>
     <label>Email<input v-model="email" type="email" autocomplete="username"></label>
     <label>Mật khẩu<input v-model="pw" type="password" autocomplete="current-password"></label>
