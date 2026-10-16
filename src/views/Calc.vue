@@ -4,7 +4,7 @@ import { store } from '../store'
 import { compute, fmt } from '../util'
 import { api } from '../api'
 const c = store.calc, r = computed(() => compute(store)), note = ref('')
-const rows = computed(() => [['Nhựa', r.value.mat], ['Điện', r.value.elec], ['Khấu hao máy', r.value.dep], ['Dự phòng in hỏng', r.value.risk], ['Công xử lý', r.value.labor], ['Chi phí khác', c.other]])
+const rows = computed(() => [['Nhựa', r.value.mat], ['Điện', r.value.elec], ['Khấu hao máy', r.value.dep], ['Dự phòng in hỏng', r.value.risk], ['Công xử lý', r.value.labor], ['Phụ kiện', r.value.accTray], ['Chi phí khác', c.other]].filter(x => x[0] !== 'Phụ kiện' || store.set.use_acc !== false))
 async function copy() {
   const t = `Báo giá Concalab\nSản phẩm: ${r.value.t?.name || '—'} · ${r.value.q} cái/khay\nGiá bán: ${fmt(r.value.price)}/sản phẩm\nCả khay: ${fmt(r.value.price * r.value.q)}`
   try { await navigator.clipboard.writeText(t); note.value = 'Đã copy' } catch { note.value = 'Không copy được' }
@@ -16,7 +16,7 @@ const err = ref('')
 async function saveProduct() {
   err.value = ''
   if (!c.name.trim()) return err.value = 'Hãy đặt tên sản phẩm'
-  const body = { name: c.name.trim(), sku: c.sku.trim(), inputs: { ...c }, unit_cost: r.value.unit, price: r.value.price, profit: r.value.profit }
+  const body = { name: c.name.trim(), sku: c.sku.trim(), inputs: JSON.parse(JSON.stringify(c)), unit_cost: r.value.unit, price: r.value.price, profit: r.value.profit }
   try {
     if (store.editing) {
       const row = await api(`products/${store.editing}`, 'PUT', body)
@@ -54,6 +54,14 @@ function fresh() { store.editing = null; c.name = ''; c.sku = '' }
         <label>Số sản phẩm trong khay<NumInput v-model="c.qty" min="1" /></label>
         <label>Chi phí khác cả khay (đ)<NumInput v-model="c.other" min="0" /></label>
       </div></div>
+      <div class="card" v-if="store.set.use_acc !== false"><h2>Phụ kiện</h2>
+        <p class="empty" v-if="!store.accessories.length">Chưa có phụ kiện. Thêm ở tab <router-link to="/accessories">Phụ kiện</router-link>.</p>
+        <div class="row" v-for="(a, i) in c.acc" :key="i">
+          <select v-model="a.id" aria-label="Phụ kiện"><option v-for="p in store.accessories" :key="p.id" :value="p.id">{{ p.name }} ({{ fmt(p.pack_qty ? p.pack_price / p.pack_qty : 0) }}/cái)</option></select>
+          <NumInput v-model="a.qty" aria-label="Số lượng cho mỗi sản phẩm" />
+          <button class="x" aria-label="Bỏ phụ kiện" @click="c.acc.splice(i, 1)">×</button></div>
+        <button class="btn g" v-if="store.accessories.length" @click="c.acc.push({ id: store.accessories[0].id, qty: 1 })">+ Thêm phụ kiện</button>
+        <p class="lbl" v-if="c.acc.length">Số lượng tính cho mỗi sản phẩm. Phụ kiện / sản phẩm: {{ fmt(r.accUnit) }}</p></div>
       <div class="card"><h2>Kênh bán</h2><div class="f">
         <label>Phí sàn (%)<NumInput v-model="c.fee" min="0" max="60" step=".1" /></label>
         <label>Phí cố định mỗi đơn (đ)<NumInput v-model="c.fixed" min="0" /></label>

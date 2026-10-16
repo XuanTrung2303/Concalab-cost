@@ -8,7 +8,7 @@ const router = useRouter(), q = ref(''), note = ref('')
 const list = computed(() => store.products
   .filter(p => `${p.name} ${p.sku || ''}`.toLowerCase().includes(q.value.toLowerCase()))
   .sort((a, b) => b.created_at.localeCompare(a.created_at)))
-function open(p) { Object.assign(store.calc, p.inputs); store.editing = p.id; router.push('/calc') }
+function open(p) { Object.assign(store.calc, { acc: [] }, JSON.parse(JSON.stringify(p.inputs))); store.editing = p.id; router.push('/calc') }
 async function del(p) {
   if (!confirm(`Xoá sản phẩm "${p.name}"?`)) return
   await api(`products/${p.id}`, 'DELETE')

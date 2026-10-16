@@ -39,9 +39,10 @@ crud('materials', 'materials', ['name', 'type', 'price_kg', 'color'])
 crud('machines', 'machines', ['name', 'kw', 'life_hours', 'price'])
 crud('company-costs', 'company_costs', ['name', 'amount', 'spent_on'])
 crud('sales', 'company_sales', ['sold_on', 'name', 'revenue', 'cogs'])
+crud('accessories', 'accessories', ['name', 'grp', 'pack_qty', 'pack_price'])
 crud('products', 'products', ['name', 'sku', 'inputs', 'unit_cost', 'price', 'profit'])
 
-const SET = ['elec', 'wage', 'fail', 'mode', 'profit', 'ovh', 'units', 'var_cost', 'avg_price']
+const SET = ['elec', 'wage', 'fail', 'mode', 'profit', 'ovh', 'units', 'var_cost', 'avg_price', 'use_acc']
 app.get('/api/settings', async (req, res) => reply(res, await req.sb.from('settings').select('*').maybeSingle().then(r => ({ ...r, data: r.data || {} }))))
 app.put('/api/settings', async (req, res) =>
   reply(res, await req.sb.from('settings').upsert({ ...pick(req.body, SET), user_id: req.uid }, { onConflict: 'user_id' }).select().single()))

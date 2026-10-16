@@ -9,11 +9,17 @@ export function compute(st) {
   const dep = m?.life_hours ? hrs * m.price / m.life_hours : 0
   const risk = (mat + elec + dep) * s.fail / 100
   const labor = c.handle / 60 * s.wage
-  const batch = mat + elec + dep + risk + labor + c.other
+  // Phụ kiện: số lượng nhập là cho mỗi sản phẩm; tắt phụ kiện thì không tính
+  const accUnit = s.use_acc === false ? 0 : (c.acc || []).reduce((a, x) => {
+    const p = st.accessories.find(y => y.id === x.id)
+    return a + (p && p.pack_qty ? p.pack_price / p.pack_qty * (+x.qty || 0) : 0)
+  }, 0)
+  const accTray = accUnit * q
+  const batch = mat + elec + dep + risk + labor + c.other + accTray
   const direct = batch / q, unit = direct + s.ovh
   const p = Math.min(s.profit, 95) / 100
   const base = s.mode === 'margin' ? unit / (1 - p) : unit * (1 + p)
   const price = (base + c.fixed) / (1 - fee)
   const profit = price * (1 - fee) - c.fixed - unit
-  return { q, m, t, mat, elec, dep, risk, labor, batch, direct, unit, price, profit }
+  return { q, m, t, mat, elec, dep, risk, labor, accUnit, accTray, batch, direct, unit, price, profit }
 }
