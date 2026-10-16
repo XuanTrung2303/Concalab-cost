@@ -7,9 +7,9 @@ import Library from './views/Library.vue'
 import Settings from './views/Settings.vue'
 import Company from './views/Company.vue'
 import Products from './views/Products.vue'
+import NumInput from './components/NumInput.vue'
 import { supabase, configured } from './supabase'
 import { store, loadAll } from './store'
-import NumInput from './components/NumInput.vue'
 import './style.css'
 
 const router = createRouter({
