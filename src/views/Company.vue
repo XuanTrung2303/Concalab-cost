@@ -7,9 +7,10 @@ import { compute, fmt } from '../util'
 const router = useRouter(), s = store.set, now = new Date(), today = now.toLocaleDateString('sv-SE')
 const curSel = v => v === 'month' ? now.getMonth() + 1 : Math.ceil((now.getMonth() + 1) / 3)
 const tab = ref('cost'), view = ref('month'), year = ref(now.getFullYear()), sel = ref(curSel('month'))
-const form = reactive({ spent_on: today, name: '', amount: null }), sf = reactive({ sold_on: today, name: '', revenue: null, cogs: null })
+const form = reactive({ spent_on: today, name: '', amount: null }), sf = reactive({ sold_on: today, revenue: null, cogs: null })
 const err = ref(''), err2 = ref('')
 const MONTHS = { month: 1, quarter: 3, year: 12 }
+const SHOW_BREAKEVEN = false // tạm ẩn phần hoà vốn và sản lượng; đổi thành true để hiện lại
 const setView = v => { view.value = v; sel.value = curSel(v) }
 const ymd = d => [+d.slice(0, 4), +d.slice(5, 7)]
 const inKey = (d, k) => { const [y, m] = ymd(d); return view.value === 'year' ? y === k : y === year.value && (view.value === 'month' ? m === k : Math.ceil(m / 3) === k) }
@@ -44,8 +45,16 @@ async function addCost() {
 }
 async function addSale() {
   err2.value = ''
-  if (!sf.name.trim() || !sf.sold_on) return err2.value = 'Hãy nhập ngày và tên khoản doanh thu'
-  try { store.sales.push(await api('sales', 'POST', { sold_on: sf.sold_on, name: sf.name.trim(), revenue: +sf.revenue || 0, cogs: +sf.cogs || 0 })); goTo(sf.sold_on); sf.name = ''; sf.revenue = sf.cogs = null } catch (e) { err2.value = e.message }
+  if (!sf.sold_on || !(+sf.revenue > 0)) return err2.value = 'Hãy nhập ngày và doanh thu của ngày đó'
+  const body = { sold_on: sf.sold_on, name: 'Doanh thu ngày', revenue: +sf.revenue, cogs: +sf.cogs || 0 }
+  try {
+    const same = store.sales.filter(x => x.sold_on === sf.sold_on)
+    if (same.length) { // mỗi ngày chỉ có một dòng: ghi đè dòng cũ
+      Object.assign(same[0], await api(`sales/${same[0].id}`, 'PUT', body))
+      for (const x of same.slice(1)) { await api(`sales/${x.id}`, 'DELETE'); store.sales = store.sales.filter(y => y.id !== x.id) }
+    } else store.sales.push(await api('sales', 'POST', body))
+    goTo(sf.sold_on); sf.revenue = sf.cogs = null
+  } catch (e) { err2.value = e.message }
 }
 const saveCost = c => api(`company-costs/${c.id}`, 'PUT', { spent_on: c.spent_on, name: c.name, amount: c.amount })
 const saveSale = c => api(`sales/${c.id}`, 'PUT', { sold_on: c.sold_on, name: c.name, revenue: c.revenue, cogs: c.cogs })
@@ -63,7 +72,7 @@ function apply() { s.ovh = Math.round(o.value.ovh); router.push('/calc') }
       <span v-if="view !== 'year'">Năm<input class="yr" v-model.number="year" type="number" min="2000" max="2100" aria-label="Năm"></span></div>
   </div>
 
-  <div class="grid" v-if="tab === 'cost'">
+  <div class="grid" v-if="tab === 'cost'" :style="SHOW_BREAKEVEN ? null : { gridTemplateColumns: '1fr' }">
     <div>
       <div class="card"><h2>Thống kê chi phí</h2>
         <div class="scroll"><table class="l"><tbody>
@@ -71,6 +80,7 @@ function apply() { s.ovh = Math.round(o.value.ovh); router.push('/calc') }
             <td style="width:45%"><div class="pbar"><i :style="{ width: r.pct + '%' }"></i></div></td><td class="n">{{ fmt(r.cost) }}</td></tr>
         </tbody></table></div></div>
       <div class="card"><h2>Khoản chi {{ name }}</h2>
+        <p class="lbl">Tổng chi: <b>{{ fmt(cur.cost) }}</b></p>
         <div class="row row4"><input v-model="form.spent_on" type="date" aria-label="Ngày chi"><input v-model="form.name" placeholder="Tên khoản chi (thuê, lương, quảng cáo...)" @keyup.enter="addCost"><NumInput v-model="form.amount" min="0" placeholder="Số tiền" @keyup.enter="addCost" /><span></span></div>
         <p class="bad" v-if="err">{{ err }}</p>
         <p><button class="btn g" @click="addCost">Thêm khoản chi</button></p>
@@ -78,13 +88,13 @@ function apply() { s.ovh = Math.round(o.value.ovh); router.push('/calc') }
         <div class="row row4" v-for="c in costs" :key="c.id">
           <input v-model="c.spent_on" type="date" aria-label="Ngày chi" @change="saveCost(c)"><input v-model="c.name" aria-label="Tên khoản chi" @change="saveCost(c)">
           <NumInput v-model="c.amount" min="0" aria-label="Số tiền" @change="saveCost(c)" /><button class="x" aria-label="Xoá" @click="delCost(c)">×</button></div></div>
-      <div class="card"><h2>Sản lượng và giá (mỗi tháng)</h2><div class="f">
+      <div class="card" v-if="SHOW_BREAKEVEN"><h2>Sản lượng và giá (mỗi tháng)</h2><div class="f">
         <label>Số sản phẩm bán / tháng<NumInput v-model="s.units" min="1" /></label>
         <label>Giá vốn trực tiếp / sản phẩm (đ)<NumInput v-model="s.var_cost" min="0" /></label>
         <label>Giá bán trung bình / sản phẩm (đ)<NumInput v-model="s.avg_price" min="0" /></label></div>
         <p><button class="btn g" @click="pull">Lấy giá vốn từ trang Giá in 3D</button></p></div>
     </div>
-    <aside class="card res">
+    <aside class="card res" v-if="SHOW_BREAKEVEN">
       <div class="lbl">Hoà vốn mỗi tháng (theo {{ name }})</div>
       <div class="big">{{ o.be ? o.be.toLocaleString('vi-VN') + ' sản phẩm' : 'Chưa tính được' }}</div>
       <table class="led"><tbody>
@@ -104,20 +114,19 @@ function apply() { s.ovh = Math.round(o.value.ovh); router.push('/calc') }
     <div>
       <div class="card"><h2>Thống kê lợi nhuận</h2>
         <div class="scroll"><table class="l">
-          <thead><tr><th>Kỳ</th><th class="n">Doanh thu</th><th class="n">Giá vốn</th><th class="n">Chi phí công ty</th><th class="n">Lợi nhuận</th></tr></thead>
+          <thead><tr><th>Kỳ</th><th class="n">Doanh thu</th><th class="n">Giá vốn</th><th class="n">Chi phí đã chi</th><th class="n">Lợi nhuận</th></tr></thead>
           <tbody><tr v-for="r in pstats" :key="r.key"><td><button class="lnk" :class="{ on: isSel(r) }" @click="pick(r)">{{ r.label }}</button></td>
             <td class="n">{{ fmt(r.rev) }}</td><td class="n">{{ fmt(r.cogs) }}</td><td class="n">{{ fmt(r.cost) }}</td>
             <td class="n"><b :class="r.profit >= 0 ? 'ok' : 'bad'">{{ fmt(r.profit) }}</b><div class="pbar" :class="{ neg: r.profit < 0 }"><i :style="{ width: r.pct + '%' }"></i></div></td></tr>
           </tbody></table></div></div>
       <div class="card"><h2>Doanh thu {{ name }}</h2>
-        <div class="row row5"><input v-model="sf.sold_on" type="date" aria-label="Ngày bán"><input v-model="sf.name" placeholder="Tên đơn hoặc sản phẩm đã bán" @keyup.enter="addSale"><NumInput v-model="sf.revenue" min="0" placeholder="Doanh thu" @keyup.enter="addSale" /><NumInput v-model="sf.cogs" min="0" placeholder="Giá vốn" @keyup.enter="addSale" /><span></span></div>
+        <div class="row row4"><input v-model="sf.sold_on" type="date" aria-label="Ngày"><NumInput v-model="sf.revenue" placeholder="Tổng doanh thu trong ngày" @keyup.enter="addSale" /><NumInput v-model="sf.cogs" placeholder="Giá vốn" @keyup.enter="addSale" /><span></span></div>
         <p class="bad" v-if="err2">{{ err2 }}</p>
-        <p><button class="btn g" @click="addSale">Thêm doanh thu</button></p>
-        <p class="note">Giá vốn là chi phí trực tiếp của đơn (nhựa, điện, khấu hao, công). Không tính chi phí công ty vào đây vì đã có ở tab Chi phí.</p>
+        <p><button class="btn g" @click="addSale">Lưu doanh thu ngày</button></p>
+        <p class="note">Chỉ cần nhập tổng doanh thu của ngày. Nhập lại cùng ngày sẽ ghi đè số cũ. Giá vốn trực tiếp (nhựa, điện, khấu hao, công) là không bắt buộc; để trống thì lợi nhuận chỉ trừ chi phí công ty.</p>
         <p class="empty" v-if="!sales.length">Chưa có doanh thu nào trong {{ name }}.</p>
-        <div class="row row5" v-for="c in sales" :key="c.id">
-          <input v-model="c.sold_on" type="date" aria-label="Ngày bán" @change="saveSale(c)"><input v-model="c.name" aria-label="Tên" @change="saveSale(c)">
-          <NumInput v-model="c.revenue" min="0" aria-label="Doanh thu" @change="saveSale(c)" /><NumInput v-model="c.cogs" min="0" aria-label="Giá vốn" @change="saveSale(c)" />
+        <div class="row row4" v-for="c in sales" :key="c.id">
+          <input v-model="c.sold_on" type="date" aria-label="Ngày" @change="saveSale(c)"><NumInput v-model="c.revenue" aria-label="Doanh thu" @change="saveSale(c)" /><NumInput v-model="c.cogs" aria-label="Giá vốn" @change="saveSale(c)" />
           <button class="x" aria-label="Xoá" @click="delSale(c)">×</button></div></div>
     </div>
     <aside class="card res">
@@ -127,10 +136,13 @@ function apply() { s.ovh = Math.round(o.value.ovh); router.push('/calc') }
         <tr><td>Doanh thu</td><td>{{ fmt(cur.rev) }}</td></tr>
         <tr><td>Giá vốn trực tiếp</td><td>{{ fmt(cur.cogs) }}</td></tr>
         <tr><td>Lãi gộp</td><td>{{ fmt(cur.rev - cur.cogs) }}</td></tr>
-        <tr><td>Chi phí công ty</td><td>{{ fmt(cur.cost) }}</td></tr>
+        <tr><td>Chi phí đã chi (tab Chi phí)</td><td>{{ fmt(cur.cost) }}</td></tr>
         <tr class="t"><td>Lợi nhuận ròng</td><td :class="cur.profit >= 0 ? 'ok' : 'bad'">{{ fmt(cur.profit) }}</td></tr>
         <tr><td>Biên lợi nhuận</td><td>{{ margin }}</td></tr>
       </tbody></table>
+      <div class="lbl" style="margin-top:14px">Các khoản chi đã trừ trong {{ name }}</div>
+      <p class="empty" v-if="!costs.length">Chưa có khoản chi nào. Thêm ở tab Chi phí.</p>
+      <table class="led" v-else><tbody><tr v-for="c in costs" :key="c.id"><td>{{ c.name }}</td><td>{{ fmt(c.amount) }}</td></tr></tbody></table>
     </aside>
   </div>
 </template>

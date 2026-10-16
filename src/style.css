@@ -45,6 +45,8 @@ input:focus,select:focus,button:focus-visible,a:focus-visible{outline:2px solid 
 .sw-dot{width:26px;height:26px;border-radius:50%;border:2px solid #0002;cursor:pointer;padding:0}.sw-dot.on{outline:2px solid var(--acc);outline-offset:2px}
 .clr{width:36px;height:30px;padding:0;margin:0;border:1px solid var(--line);border-radius:6px;background:none;cursor:pointer}
 .login{max-width:400px;margin:70px auto 40px;display:grid;gap:12px}.login h1,.login .sub{text-align:center}
-.logo-tile{justify-self:center;background:#0e1411;border-radius:24px;padding:18px 24px;margin-bottom:6px}.logo-tile img{display:block;width:150px;height:auto}
+.logo{display:flex;justify-content:center;margin-bottom:4px}.logo img{display:block;width:170px;height:auto}
+.for-dark{display:none}:root[data-theme=dark] .for-light{display:none}:root[data-theme=dark] .for-dark{display:block}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media(max-width:600px){.row4{grid-template-columns:1fr 1fr}}
 input[type=checkbox]{width:auto;margin:0 8px 0 0;accent-color:var(--acc)}.chk{display:flex;align-items:center;color:var(--ink);font-size:15px}
