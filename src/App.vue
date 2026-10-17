@@ -14,7 +14,7 @@ async function logout() { await supabase.auth.signOut(); store.user = null; rout
 </script>
 <template>
   <header v-if="store.user"><div class="bar">
-    <router-link class="brand" to="/calc">Conca<i>lab</i></router-link>
+    <router-link class="brand" to="/calc">ConCá<i> Lab</i></router-link>
     <nav class="sw">
       <router-link to="/calc" active-class="" :class="{ on: !['/company', '/capital'].includes(route.path) }">Giá in 3D</router-link>
       <router-link to="/company" active-class="on">Chi phí công ty</router-link>

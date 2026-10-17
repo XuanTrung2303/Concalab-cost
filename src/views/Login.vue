@@ -17,8 +17,8 @@ async function login() {
 }
 
 // Logo của bạn: để file vào thư mục public/ rồi sửa tên file ở đây nếu khác (png, svg, webp đều được)
-const LOGO_LIGHT = '/logo-light.png' // dùng ở chế độ sáng
-const LOGO_DARK = '/logo-dark.png'   // dùng ở chế độ tối
+const LOGO_LIGHT = '/favicon-conca.svg' // dùng ở chế độ sáng
+const LOGO_DARK = '/favicon-conca-1.svg'   // dùng ở chế độ tối
 </script>
 <template>
   <form class="card login" @submit.prevent="login">
