@@ -1,10 +1,19 @@
 import { reactive, watch, nextTick } from 'vue'
 import { api } from './api'
+// Biểu mẫu tính giá trống: dùng cho lúc mở app và khi bấm "Tạo sản phẩm mới"
+export const blankCalc = () => ({ acc: [], name: '', sku: '', machine: null, mats: [{ id: null, gram: 0 }], h: 0, min: 0, handle: 0, qty: 1, other: 0, fee: 0, fixed: 0 })
 export const store = reactive({
   user: null, loading: false, loadError: '', materials: [], machines: [], costs: [], products: [], sales: [], accessories: [], capital: [], editing: null,
   set: { elec: 3500, wage: 30000, fail: 5, mode: 'markup', profit: 50, ovh: 0, units: 300, var_cost: 0, avg_price: 0, use_acc: true },
-  calc: { acc: [], name: '', sku: '', machine: null, mats: [{ id: null, gram: 50 }], h: 2, min: 30, handle: 10, qty: 1, other: 0, fee: 0, fixed: 0 }
+  calc: blankCalc()
 })
+// Xoá sạch biểu mẫu, chọn lại máy và nhựa đầu tiên trong thư viện, thoát chế độ sửa sản phẩm
+export function resetCalc() {
+  Object.assign(store.calc, blankCalc())
+  store.calc.machine = store.machines[0]?.id ?? null
+  store.calc.mats[0].id = store.materials[0]?.id ?? null
+  store.editing = null
+}
 let ready = false, timer
 export async function loadAll() {
   store.loading = true; store.loadError = ''; ready = false

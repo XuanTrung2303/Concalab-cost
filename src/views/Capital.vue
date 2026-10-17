@@ -3,6 +3,7 @@ import { computed, reactive, ref } from 'vue'
 import { store } from '../store'
 import { api } from '../api'
 import { fmt } from '../util'
+import DateInput from '../Components/DateInput.vue'
 const today = new Date().toLocaleDateString('sv-SE')
 const filter = ref('all'), err = ref('')
 const form = reactive({ kind: 'thu', entry_date: today, name: '', amount: null })
@@ -27,6 +28,7 @@ async function add() {
     form.name = ''; form.amount = null
   } catch (e) { err.value = e.message }
 }
+const setDate = (r, v) => { r.entry_date = v; save(r) }
 const save = r => api(`capital/${r.id}`, 'PUT', { kind: r.kind, entry_date: r.entry_date, name: r.name, amount: r.amount })
 async function del(r) { await api(`capital/${r.id}`, 'DELETE'); store.capital = store.capital.filter(x => x.id !== r.id) }
 </script>
@@ -37,7 +39,7 @@ async function del(r) { await api(`capital/${r.id}`, 'DELETE'); store.capital = 
     <div>
       <div class="card"><h2>Thêm khoản</h2>
         <div class="sw lt kind"><button :class="{ on: form.kind === 'thu' }" @click="form.kind = 'thu'">Thu</button><button :class="{ on: form.kind === 'chi' }" @click="form.kind = 'chi'">Chi</button></div>
-        <div class="row row4"><input v-model="form.entry_date" type="date" aria-label="Ngày"><input v-model="form.name" placeholder="Nội dung (góp vốn, mua máy, rút vốn...)" @keyup.enter="add"><NumInput v-model="form.amount" placeholder="Số tiền" @keyup.enter="add" /><span></span></div>
+        <div class="row row4"><DateInput v-model="form.entry_date" /><input v-model="form.name" placeholder="Nội dung (góp vốn, mua máy, rút vốn...)" @keyup.enter="add"><NumInput v-model="form.amount" placeholder="Số tiền" @keyup.enter="add" /><span></span></div>
         <p class="bad" v-if="err">{{ err }}</p>
         <p><button class="btn g" @click="add">Thêm khoản {{ form.kind === 'thu' ? 'thu' : 'chi' }}</button></p></div>
       <div class="card"><h2>Sổ vốn</h2>
@@ -50,7 +52,7 @@ async function del(r) { await api(`capital/${r.id}`, 'DELETE'); store.capital = 
           </template>
           <template v-else>
             <select v-model="r.kind" aria-label="Loại" @change="save(r)"><option value="thu">Thu</option><option value="chi">Chi</option></select>
-            <input v-model="r.entry_date" type="date" aria-label="Ngày" @change="save(r)"><input v-model="r.name" aria-label="Nội dung" @change="save(r)">
+            <DateInput :model-value="r.entry_date" @update:model-value="v => v && setDate(r, v)" /><input v-model="r.name" aria-label="Nội dung" @change="save(r)">
             <NumInput v-model="r.amount" aria-label="Số tiền" @change="save(r)" /><button class="x" aria-label="Xoá" @click="del(r)">×</button>
           </template>
         </div></div>

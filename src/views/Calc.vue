@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { store } from '../store'
+import { store, resetCalc } from '../store'
 import { compute, fmt } from '../util'
 import { api } from '../api'
 const c = store.calc, r = computed(() => compute(store)), note = ref('')
@@ -35,7 +35,7 @@ async function saveProduct() {
   } catch (e) { err.value = e.message }
   setTimeout(() => note.value = '', 2500)
 }
-function fresh() { store.editing = null; c.name = ''; c.sku = '' }
+function fresh() { resetCalc(); err.value = ''; note.value = '' }
 </script>
 <template>
   <h1>Tính giá in 3D</h1>
