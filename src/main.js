@@ -10,7 +10,7 @@ import Products from './views/Products.vue'
 import Capital from './views/Capital.vue'
 import { supabase, configured } from './supabase'
 import { store, loadAll } from './store'
-import NumInput from './components/NumInput.vue'
+import NumInput from './Components/NumInput.vue'
 import { applyTheme } from './theme'
 import './style.css'
 
