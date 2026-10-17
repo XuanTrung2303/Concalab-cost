@@ -4,14 +4,15 @@ import { store } from '../store'
 import { compute, fmt } from '../util'
 import { api } from '../api'
 const c = store.calc, r = computed(() => compute(store)), note = ref('')
-const rows = computed(() => [['Nhựa', r.value.mat], ['Điện', r.value.elec], ['Khấu hao máy', r.value.dep], ['Dự phòng in hỏng', r.value.risk], ['Công xử lý', r.value.labor], ['Phụ kiện', r.value.accTray], ['Chi phí khác', c.other]].filter(x => x[0] !== 'Phụ kiện' || store.set.use_acc !== false))
+const rows = computed(() => [['Nhựa', r.value.mat], ['Điện', r.value.elec], ['Khấu hao máy', r.value.dep], ['Công xử lý', r.value.labor], ['Phụ kiện', r.value.accTray], ['Chi phí khác', c.other], [`Dự phòng in hỏng (${store.set.fail}%)`, r.value.risk]].filter(x => x[0] !== 'Phụ kiện' || store.set.use_acc !== false))
 async function copy() {
   const t = `Báo giá Concalab\nSản phẩm: ${r.value.t?.name || '—'} · ${r.value.q} cái/khay\nGiá bán: ${fmt(r.value.price)}/sản phẩm\nCả khay: ${fmt(r.value.price * r.value.q)}`
   try { await navigator.clipboard.writeText(t); note.value = 'Đã copy' } catch { note.value = 'Không copy được' }
   setTimeout(() => note.value = '', 2000)
 }
 const depHour = computed(() => r.value.m?.life_hours ? r.value.m.price / r.value.m.life_hours : 0)
-const pct = v => r.value.batch ? Math.round(v / r.value.batch * 100) : 0
+// Tỷ lệ tính trên chi phí trước dự phòng, nên dòng dự phòng luôn hiện đúng tỷ lệ trong Cài đặt
+const pct = v => r.value.sub ? Math.round(v / r.value.sub * 100) : 0
 const err = ref('')
 async function saveProduct() {
   err.value = ''
@@ -76,7 +77,6 @@ function fresh() { store.editing = null; c.name = ''; c.sku = '' }
         <tr v-for="x in rows" :key="x[0]"><td>{{ x[0] }}<template v-if="x[0] === 'Nhựa' && r.t"> · <i class="dot" :style="{ background: r.t.color || '#ccc' }"></i>{{ r.t.name }}, {{ c.gram }}g</template>
           <div class="pbar"><i :style="{ width: pct(x[1]) + '%' }"></i></div></td><td>{{ fmt(x[1]) }}<div class="lbl">{{ pct(x[1]) }}%</div></td></tr>
         <tr class="t"><td>Giá vốn cả khay</td><td>{{ fmt(r.batch) }}</td></tr>
-        <tr v-if="store.set.ovh"><td>Chi phí công ty / sản phẩm</td><td>{{ fmt(store.set.ovh) }}</td></tr>
       </tbody>
 </table>
       <div class="two"><div><div class="lbl">Giá bán cả khay</div><b>{{ fmt(r.price * r.q) }}</b></div>

@@ -40,7 +40,18 @@ crud('machines', 'machines', ['name', 'kw', 'life_hours', 'price'])
 crud('company-costs', 'company_costs', ['name', 'amount', 'spent_on'])
 crud('sales', 'company_sales', ['sold_on', 'name', 'revenue', 'cogs'])
 crud('accessories', 'accessories', ['name', 'grp', 'pack_qty', 'pack_price'])
+crud('capital', 'company_capital', ['kind', 'entry_date', 'name', 'amount'])
 crud('products', 'products', ['name', 'sku', 'inputs', 'unit_cost', 'price', 'profit'])
+
+// Một lần gọi cho toàn bộ dữ liệu: chỉ xác thực một lần thay vì tám lần, đăng nhập xong vào app nhanh hơn nhiều
+app.get('/api/bootstrap', async (req, res) => {
+  const q = t => req.sb.from(t).select('*').order('created_at')
+  const r = await Promise.all([q('materials'), q('machines'), q('company_costs'), q('products'), q('company_sales'), q('accessories'), q('company_capital'), req.sb.from('settings').select('*').maybeSingle()])
+  const bad = r.find(x => x.error)
+  if (bad) return res.status(400).json({ error: bad.error.message })
+  const [materials, machines, costs, products, sales, accessories, capital, settings] = r.map(x => x.data)
+  res.json({ materials, machines, costs, products, sales, accessories, capital, settings: settings || {} })
+})
 
 const SET = ['elec', 'wage', 'fail', 'mode', 'profit', 'ovh', 'units', 'var_cost', 'avg_price', 'use_acc']
 app.get('/api/settings', async (req, res) => reply(res, await req.sb.from('settings').select('*').maybeSingle().then(r => ({ ...r, data: r.data || {} }))))

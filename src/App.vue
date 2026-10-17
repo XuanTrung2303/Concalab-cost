@@ -1,6 +1,6 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
-import { store } from './store'
+import { store, loadAll } from './store'
 import { supabase } from './supabase'
 import { h } from 'vue'
 import { dark, toggleTheme } from './theme'
@@ -14,22 +14,31 @@ async function logout() { await supabase.auth.signOut(); store.user = null; rout
 </script>
 <template>
   <header v-if="store.user"><div class="bar">
-    <router-link class="brand" to="/calc">ConCá<i> Lab</i></router-link>
+    <router-link class="brand" to="/calc">Conca<i>lab</i></router-link>
     <nav class="sw">
-      <router-link to="/calc" active-class="" :class="{ on: route.path !== '/company' }">Giá in 3D</router-link>
+      <router-link to="/calc" active-class="" :class="{ on: !['/company', '/capital'].includes(route.path) }">Giá in 3D</router-link>
       <router-link to="/company" active-class="on">Chi phí công ty</router-link>
+      <router-link to="/capital" active-class="on">Vốn công ty</router-link>
     </nav>
     <button class="out ico" :title="dark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'" :aria-label="dark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'" @click="toggleTheme"><Icon :dark="dark" /></button>
     <button class="out" @click="logout">Đăng xuất</button>
   </div></header>
   <button v-else class="tgl ico" :title="dark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'" :aria-label="dark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'" @click="toggleTheme"><Icon :dark="dark" /></button>
   <main>
-    <div class="tabs" v-if="store.user && route.path !== '/company'">
+    <div class="tabs" v-if="store.user && !['/company', '/capital'].includes(route.path)">
       <router-link v-for="t in tabs" :key="t[0]" :to="t[0]" active-class="on">{{ t[1] }}</router-link>
     </div>
-    <router-view :key="route.path" />
+    <div v-if="store.user && store.loading" class="wait" role="status"><span class="spin" aria-hidden="true"></span>Đang tải dữ liệu...</div>
+    <div v-else-if="store.user && store.loadError" class="card">
+      <p class="bad">Không tải được dữ liệu: {{ store.loadError }}</p>
+      <button class="btn" @click="loadAll">Thử lại</button></div>
+    <router-view v-else :key="route.path" />
   </main>
 </template>
 <style scoped>
 .ico{display:inline-flex;align-items:center;justify-content:center;padding:7px;line-height:0}
+.wait{display:flex;align-items:center;justify-content:center;gap:12px;padding:80px 0;color:var(--mut)}
+.spin{width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:turn .7s linear infinite}
+@keyframes turn{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spin{animation-duration:2s}}
 </style>
