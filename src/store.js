@@ -1,18 +1,19 @@
-import { reactive, watch } from 'vue'
+import { reactive, watch, nextTick } from 'vue'
 import { api } from './api'
 export const store = reactive({
   user: null, loading: false, loadError: '', materials: [], machines: [], costs: [], products: [], sales: [], accessories: [], capital: [], editing: null,
   set: { elec: 3500, wage: 30000, fail: 5, mode: 'markup', profit: 50, ovh: 0, units: 300, var_cost: 0, avg_price: 0, use_acc: true },
-  calc: { acc: [], name: '', sku: '', machine: null, material: null, gram: 50, h: 2, min: 30, handle: 10, qty: 1, other: 0, fee: 0, fixed: 0 }
+  calc: { acc: [], name: '', sku: '', machine: null, mats: [{ id: null, gram: 50 }], h: 2, min: 30, handle: 10, qty: 1, other: 0, fee: 0, fixed: 0 }
 })
 let ready = false, timer
 export async function loadAll() {
-  store.loading = true; store.loadError = ''
+  store.loading = true; store.loadError = ''; ready = false
   try {
     const d = await api('bootstrap') // một lần gọi duy nhất thay cho tám lần
     Object.assign(store, { materials: d.materials, machines: d.machines, costs: d.costs, products: d.products, sales: d.sales, accessories: d.accessories, capital: d.capital })
     Object.assign(store.set, d.settings)
-    store.calc.machine ||= d.machines[0]?.id; store.calc.material ||= d.materials[0]?.id
+    store.calc.machine ||= d.machines[0]?.id; if (!store.calc.mats[0]?.id) store.calc.mats[0].id = d.materials[0]?.id
+    await nextTick() // để lần gán dữ liệu vừa tải không bị coi là người dùng vừa sửa cài đặt
     ready = true
   } catch (e) { store.loadError = e.message || 'Lỗi không xác định'; console.error(e) }
   finally { store.loading = false }

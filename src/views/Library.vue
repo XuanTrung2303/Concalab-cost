@@ -21,7 +21,7 @@ async function add() {
   try {
     const row = await api(cfg.path, 'POST', Object.fromEntries(Object.entries(form).filter(([, v]) => v !== undefined && v !== null)))
     store[props.kind].push(row)
-    if (!isAcc) { const k = isMat ? 'material' : 'machine'; if (!store.calc[k]) store.calc[k] = row.id }
+    if (!isAcc) { if (isMat) { if (!store.calc.mats[0]?.id) store.calc.mats[0].id = row.id } else if (!store.calc.machine) store.calc.machine = row.id }
     Object.keys(form).forEach(x => delete form[x]); if (isMat) form.color = COLORS[0]
   } catch (e) { err.value = e.message }
 }
