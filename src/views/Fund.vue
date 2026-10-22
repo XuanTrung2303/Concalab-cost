@@ -48,8 +48,7 @@ async function del(r) { await api(`fund/${r.id}`, 'DELETE'); store.fund = store.
         <div class="row cap" v-for="r in rows" :key="r.id">
           <template v-if="r.auto">
             <span :class="r.profit >= 0 ? 'ok' : 'bad'"><b>Thu</b></span><span>{{ my(r.ym) }}</span>
-            <span>{{ r.profit >= 0 ? 'Lợi nhuận' : 'Lỗ' }} tháng {{ my(r.ym) }}
-              <span class="lbl sub2">Doanh thu {{ fmt(r.rev) }} − hoàn vốn {{ fmt(r.cogs) }} − chi phí {{ fmt(r.cost) }}</span></span>
+            <span>{{ r.profit >= 0 ? 'Lợi nhuận' : 'Lỗ' }} tháng {{ my(r.ym) }}</span>
             <span class="n" :class="r.profit >= 0 ? 'ok' : 'bad'">{{ fmt(r.profit) }}</span><span></span>
           </template>
           <template v-else>
