@@ -3,7 +3,7 @@ import { computed, reactive, ref } from 'vue'
 import { store } from '../store'
 import { api } from '../api'
 import { fmt, monthlyProfit } from '../util'
-import DateInput from '../components/DateInput.vue'
+import DateInput from '../Components/DateInput.vue'
 const today = new Date().toLocaleDateString('sv-SE')
 const filter = ref('all'), err = ref('')
 const form = reactive({ entry_date: today, name: '', amount: null })
