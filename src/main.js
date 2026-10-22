@@ -8,10 +8,11 @@ import Settings from './views/Settings.vue'
 import Company from './views/Company.vue'
 import Products from './views/Products.vue'
 import Capital from './views/Capital.vue'
+import Fund from './views/Fund.vue'
 import { supabase, configured } from './supabase'
 import { store, loadAll } from './store'
 import NumInput from './Components/NumInput.vue'
-import { applyTheme } from './theme'
+import { applyTheme } from './theme.js'
 import './style.css'
 
 applyTheme()
@@ -27,7 +28,8 @@ const router = createRouter({
     { path: '/accessories', component: Library, props: { kind: 'accessories' } },
     { path: '/settings', component: Settings },
     { path: '/company', component: Company },
-    { path: '/capital', component: Capital }
+    { path: '/capital', component: Capital },
+    { path: '/fund', component: Fund }
   ]
 })
 router.beforeEach(to => {

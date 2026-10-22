@@ -6,9 +6,10 @@ create table products(id uuid primary key default gen_random_uuid(), user_id uui
 create table company_sales(id uuid primary key default gen_random_uuid(), user_id uuid not null default auth.uid() references auth.users on delete cascade, sold_on date not null default current_date, name text not null, revenue numeric default 0, cogs numeric default 0, created_at timestamptz default now());
 create table accessories(id uuid primary key default gen_random_uuid(), user_id uuid not null default auth.uid() references auth.users on delete cascade, name text not null, grp text default 'Phụ kiện', pack_qty numeric not null default 1, pack_price numeric not null default 0, created_at timestamptz default now());
 create table company_capital(id uuid primary key default gen_random_uuid(), user_id uuid not null default auth.uid() references auth.users on delete cascade, kind text not null check (kind in ('thu','chi')), entry_date date not null default current_date, name text not null, amount numeric not null default 0, created_at timestamptz default now());
+create table company_fund(id uuid primary key default gen_random_uuid(), user_id uuid not null default auth.uid() references auth.users on delete cascade, entry_date date not null default current_date, name text not null, amount numeric not null default 0, created_at timestamptz default now());
 create table settings(user_id uuid primary key default auth.uid() references auth.users on delete cascade, elec numeric default 3500, wage numeric default 30000, fail numeric default 5, mode text default 'markup', profit numeric default 50, ovh numeric default 0, units numeric default 300, var_cost numeric default 0, avg_price numeric default 0, use_acc boolean default true, updated_at timestamptz default now());
 do $$ declare t text; begin
- foreach t in array array['materials','machines','company_costs','products','company_sales','accessories','company_capital','settings'] loop
+ foreach t in array array['materials','machines','company_costs','products','company_sales','accessories','company_capital','company_fund','settings'] loop
   execute format('alter table %I enable row level security',t);
   execute format('create policy "own rows" on %I for all using (auth.uid()=user_id) with check (auth.uid()=user_id)',t);
  end loop; end $$;

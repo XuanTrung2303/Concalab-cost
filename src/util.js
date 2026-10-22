@@ -30,3 +30,13 @@ export function compute(st) {
   const profit = price * (1 - fee) - c.fixed - unit
   return { q, m, matLines, mat, elec, dep, risk, labor, accUnit, accTray, sub, batch, direct, unit, price, profit }
 }
+
+// Lợi nhuận ròng từng tháng = doanh thu - hoàn vốn - chi phí đã chi; chỉ liệt kê tháng có số liệu, tháng mới nhất trước
+export function monthlyProfit(st) {
+  const m = {}
+  const at = ym => (m[ym] ||= { ym, rev: 0, cogs: 0, cost: 0 })
+  for (const s of st.sales) { const x = at(s.sold_on.slice(0, 7)); x.rev += +s.revenue || 0; x.cogs += +s.cogs || 0 }
+  for (const c of st.costs) at(c.spent_on.slice(0, 7)).cost += +c.amount || 0
+  return Object.values(m).filter(x => x.rev || x.cogs || x.cost)
+    .map(x => ({ ...x, profit: x.rev - x.cogs - x.cost })).sort((a, b) => b.ym.localeCompare(a.ym))
+}
