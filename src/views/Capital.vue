@@ -48,7 +48,7 @@ async function del(r) { await api(`capital/${r.id}`, 'DELETE'); store.capital = 
         <div class="row cap" v-for="r in rows" :key="r.id">
           <template v-if="r.auto">
             <span :class="r.kind === 'thu' ? 'ok' : 'bad'"><b>Thu</b></span><span>{{ dmy(r.entry_date) }}</span>
-            <span>{{ r.name }} <span class="lbl">(tự động từ Doanh thu)</span></span><span class="n">{{ fmt(r.amount) }}</span><span></span>
+            <span>{{ r.name }}</span><span class="n">{{ fmt(r.amount) }}</span><span></span>
           </template>
           <template v-else>
             <select v-model="r.kind" aria-label="Loại" @change="save(r)"><option value="thu">Thu</option><option value="chi">Chi</option></select>
@@ -62,7 +62,7 @@ async function del(r) { await api(`capital/${r.id}`, 'DELETE'); store.capital = 
       <div class="big" :class="balance >= 0 ? 'ok' : 'bad'">{{ fmt(balance) }}</div>
       <table class="led"><tbody>
         <tr><td>Tổng thu</td><td>{{ fmt(thu) }}</td></tr>
-        <tr><td>Trong đó hoàn vốn tự động</td><td>{{ fmt(hoan) }}</td></tr>
+        <tr><td>Hoàn vốn</td><td>{{ fmt(hoan) }}</td></tr>
         <tr><td>Tổng chi</td><td>{{ fmt(chi) }}</td></tr>
         <tr class="t"><td>Còn lại</td><td :class="balance >= 0 ? 'ok' : 'bad'">{{ fmt(balance) }}</td></tr>
       </tbody></table>

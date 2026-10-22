@@ -48,7 +48,7 @@ async function del(r) { await api(`fund/${r.id}`, 'DELETE'); store.fund = store.
         <div class="row cap" v-for="r in rows" :key="r.id">
           <template v-if="r.auto">
             <span :class="r.profit >= 0 ? 'ok' : 'bad'"><b>Thu</b></span><span>{{ my(r.ym) }}</span>
-            <span>{{ r.profit >= 0 ? 'Lợi nhuận' : 'Lỗ' }} tháng {{ my(r.ym) }} <span class="lbl">(tự động)</span>
+            <span>{{ r.profit >= 0 ? 'Lợi nhuận' : 'Lỗ' }} tháng {{ my(r.ym) }}
               <span class="lbl sub2">Doanh thu {{ fmt(r.rev) }} − hoàn vốn {{ fmt(r.cogs) }} − chi phí {{ fmt(r.cost) }}</span></span>
             <span class="n" :class="r.profit >= 0 ? 'ok' : 'bad'">{{ fmt(r.profit) }}</span><span></span>
           </template>
@@ -67,7 +67,7 @@ async function del(r) { await api(`fund/${r.id}`, 'DELETE'); store.fund = store.
         <tr><td>Tổng chi</td><td>{{ fmt(chi) }}</td></tr>
         <tr class="t"><td>Còn lại</td><td :class="balance >= 0 ? 'ok' : 'bad'">{{ fmt(balance) }}</td></tr>
       </tbody></table>
-      <p class="note">Lợi nhuận lấy từ <router-link to="/company">Chi phí công ty</router-link>, tab Lợi nhuận. Sửa doanh thu, hoàn vốn hoặc chi phí của tháng nào thì số tiền cộng vào quỹ của tháng đó tự đổi theo. Tháng lỗ sẽ trừ vào quỹ.</p>
+      <p class="note">Lợi nhuận lấy từ <router-link to="/company">Chi phí công ty</router-link>. Tháng lỗ sẽ trừ vào quỹ.</p>
     </aside>
   </div>
 </template>
