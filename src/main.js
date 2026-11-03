@@ -9,7 +9,8 @@ import Company from './views/Company.vue'
 import Products from './views/Products.vue'
 import Capital from './views/Capital.vue'
 import Fund from './views/Fund.vue'
-import { supabase, configured } from './supabase'
+import Contrib from './views/Contrib.vue'
+import { supabase, configured } from './supabase.js'
 import { store, loadAll } from './store'
 import NumInput from './Components/NumInput.vue'
 import { applyTheme } from './theme.js'
@@ -29,7 +30,8 @@ const router = createRouter({
     { path: '/settings', component: Settings },
     { path: '/company', component: Company },
     { path: '/capital', component: Capital },
-    { path: '/fund', component: Fund }
+    { path: '/fund', component: Fund },
+    { path: '/contrib', component: Contrib }
   ]
 })
 router.beforeEach(to => {

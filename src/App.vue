@@ -1,7 +1,7 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
 import { store, loadAll } from './store'
-import { supabase } from './supabase'
+import { supabase } from './supabase.js'
 import { h } from 'vue'
 import { dark, toggleTheme } from './theme.js'
 // Biểu tượng mặt trời (đang tối, bấm để sáng) và mặt trăng (đang sáng, bấm để tối)
@@ -16,17 +16,18 @@ async function logout() { await supabase.auth.signOut(); store.user = null; rout
   <header v-if="store.user"><div class="bar">
     <router-link class="brand" to="/calc">Conca<i>lab</i></router-link>
     <nav class="sw">
-      <router-link to="/calc" active-class="" :class="{ on: !['/company', '/capital', '/fund'].includes(route.path) }">Giá in 3D</router-link>
+      <router-link to="/calc" active-class="" :class="{ on: !['/company', '/capital', '/fund', '/contrib'].includes(route.path) }">Giá in 3D</router-link>
       <router-link to="/company" active-class="on">Chi phí công ty</router-link>
       <router-link to="/capital" active-class="on">Vốn công ty</router-link>
       <router-link to="/fund" active-class="on">Quỹ công ty</router-link>
+      <router-link to="/contrib" active-class="on">Góp vốn</router-link>
     </nav>
     <button class="out ico" :title="dark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'" :aria-label="dark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'" @click="toggleTheme"><Icon :dark="dark" /></button>
     <button class="out" @click="logout">Đăng xuất</button>
   </div></header>
   <button v-else class="tgl ico" :title="dark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'" :aria-label="dark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'" @click="toggleTheme"><Icon :dark="dark" /></button>
   <main>
-    <div class="tabs" v-if="store.user && !['/company', '/capital', '/fund'].includes(route.path)">
+    <div class="tabs" v-if="store.user && !['/company', '/capital', '/fund', '/contrib'].includes(route.path)">
       <router-link v-for="t in tabs" :key="t[0]" :to="t[0]" active-class="on">{{ t[1] }}</router-link>
     </div>
     <div v-if="store.user && store.loading" class="wait" role="status"><span class="spin" aria-hidden="true"></span>Đang tải dữ liệu...</div>
